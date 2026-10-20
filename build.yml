@@ -1,0 +1,100 @@
+name: Build NeuroStreamStudio
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Restore dependencies
+        run: dotnet restore NeuroStreamStudio.csproj
+
+      - name: Publish self-contained .exe
+        run: >
+          dotnet publish NeuroStreamStudio.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -p:EnableCompressionInSingleFile=true
+          -p:Version=1.0.${{ github.run_number }}
+          -p:AssemblyVersion=1.0.${{ github.run_number }}.0
+          -p:FileVersion=1.0.${{ github.run_number }}.0
+          -o dist
+
+      # ---------- Загрузка и бандлинг FFmpeg ----------
+      # ffmpeg.exe не является NuGet-пакетом - это отдельный исполняемый
+      # файл (см. FFmpegLocator.cs). Скачиваем официально рекомендованную
+      # сборку essentials с gyan.dev (ffmpeg.org/download.html#build-windows
+      # прямо ссылается на gyan.dev как на рекомендованный источник сборок
+      # под Windows) и кладём ffmpeg.exe рядом с NeuroStreamStudio.exe - тот же
+      # паттерн, что уже используют другие .NET-приложения с аналогичной
+      # задачей (например, TwitchDownloaderWPF).
+      #
+      # URL НЕ версионирован намеренно (gyan.dev/ffmpeg/builds/ffmpeg-
+      # release-essentials.zip всегда указывает на последний релиз) - это
+      # тот же URL, на который опирается официальный Rust-крейт
+      # ffmpeg-sidecar как источник "последней опубликованной сборки".
+      # Архив распаковывается в папку с версией в имени
+      # (ffmpeg-X.Y-essentials_build/bin/ffmpeg.exe) - поэтому ffmpeg.exe
+      # ищется по шаблону, а не по жёстко прописанному пути.
+      - name: Download and bundle ffmpeg.exe
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          Invoke-WebRequest -Uri "https://www.gyan.dev/ffmpeg/builds/ffmpeg-release-essentials.zip" -OutFile "ffmpeg.zip"
+          Expand-Archive -Path "ffmpeg.zip" -DestinationPath "ffmpeg-extracted"
+
+          $ffmpegExe = Get-ChildItem -Path "ffmpeg-extracted" -Filter "ffmpeg.exe" -Recurse | Select-Object -First 1
+          if (-not $ffmpegExe) {
+            Write-Error "ffmpeg.exe не найден в скачанном архиве — структура архива могла измениться."
+            exit 1
+          }
+
+          Copy-Item -Path $ffmpegExe.FullName -Destination "dist/ffmpeg.exe"
+          Write-Host "ffmpeg.exe скопирован из $($ffmpegExe.FullName)"
+
+      - name: Verify bundled ffmpeg runs
+        shell: pwsh
+        run: |
+          $version = & "dist/ffmpeg.exe" -version
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Забандленный ffmpeg.exe не запускается."
+            exit 1
+          }
+          Write-Host $version[0]
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: NeuroStreamStudio-app
+          path: dist/
+          if-no-files-found: error
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: NeuroStreamStudio build ${{ github.run_number }}
+          files: |
+            dist/NeuroStreamStudio.exe
+            dist/ffmpeg.exe
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

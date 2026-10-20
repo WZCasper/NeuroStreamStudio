@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>NeuroStreamStudio</AssemblyName>
+    <RootNamespace>NeuroStreamStudio</RootNamespace>
+    <ApplicationIcon>icon.ico</ApplicationIcon>
+    <Platforms>x64</Platforms>
+
+    <!-- Публикуется как самодостаточный один .exe (см. .github/workflows/build.yml,
+         шаг dotnet publish) - пользователю не нужно отдельно ставить .NET
+         Runtime. Trimming отключён: OpenCvSharp4 и ScreenCapture.NET.DX11
+         используют нативный интероп (P/Invoke, COM), который IL Trimmer
+         может ошибочно посчитать неиспользуемым и вырезать, что приводит
+         к падениям в рантайме без ошибки на этапе сборки - тот же компромисс,
+         что уже сделан в NeuroCamera.csproj по той же причине. -->
+    <PublishTrimmed>false</PublishTrimmed>
+    <SelfContained>true</SelfContained>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Захват экрана: DXGI Desktop Duplication, чистый managed-код,
+         без конфликта с WPF COM-интеропом (см. ScreenCaptureEngine.cs) -->
+    <PackageReference Include="ScreenCapture.NET" Version="3.0.0" />
+    <PackageReference Include="ScreenCapture.NET.DX11" Version="3.0.0" />
+
+    <!-- Захват камеры и композитинг: тот же стек, что в NeuroCamera -->
+    <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,191 @@
+<Window x:Class="NeuroStreamStudio.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="NeuroStreamStudio" Height="720" Width="1180"
+        MinHeight="600" MinWidth="960"
+        Background="#0A0A0A"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.Resources>
+        <SolidColorBrush x:Key="AccentBrush" Color="#EAB308"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#111113"/>
+        <SolidColorBrush x:Key="BorderBrush1" Color="#27272A"/>
+        <SolidColorBrush x:Key="TextBrush" Color="#F3F4F6"/>
+        <SolidColorBrush x:Key="MutedBrush" Color="#888888"/>
+        <SolidColorBrush x:Key="DangerBrush" Color="#EF4444"/>
+
+        <Style x:Key="SectionLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Margin" Value="0,0,0,4"/>
+        </Style>
+
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#000000"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush1}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style TargetType="PasswordBox">
+            <Setter Property="Background" Value="#000000"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush1}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style TargetType="ComboBox">
+            <Setter Property="Background" Value="#000000"/>
+            <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderBrush1}"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+        </Style>
+
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentBrush}"/>
+            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Padding" Value="20,10"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <Style x:Key="StopButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+            <Setter Property="Foreground" Value="#FFFFFF"/>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
+            <TextBlock Text="⚡ NeuroStreamStudio" FontSize="20" FontWeight="Black"
+                       Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center"/>
+            <TextBlock x:Name="StatusText" Text="Готово к запуску" FontSize="12"
+                       Foreground="{StaticResource MutedBrush}" VerticalAlignment="Center" Margin="16,0,0,0"/>
+        </StackPanel>
+
+        <!-- Основная область -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Превью композиции -->
+            <Border Grid.Column="0" Background="#000000" BorderBrush="{StaticResource BorderBrush1}"
+                    BorderThickness="2" Margin="0,0,16,0" CornerRadius="8">
+                <Grid>
+                    <Image x:Name="PreviewImage" Stretch="Uniform"/>
+                    <TextBlock Text="Превью появится после выбора источников"
+                               Foreground="{StaticResource MutedBrush}"
+                               HorizontalAlignment="Center" VerticalAlignment="Center"
+                               x:Name="PreviewPlaceholder"/>
+                </Grid>
+            </Border>
+
+            <!-- Панель настроек -->
+            <ScrollViewer Grid.Column="1" VerticalScrollBarVisibility="Auto">
+                <StackPanel>
+
+                    <TextBlock Text="ИСТОЧНИКИ ВИДЕО" Style="{StaticResource SectionLabel}"/>
+
+                    <TextBlock Text="Экран" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox x:Name="ScreenComboBox"/>
+
+                    <TextBlock Text="Камера" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox x:Name="CameraComboBox"/>
+
+                    <TextBlock Text="Позиция камеры (PiP)" Style="{StaticResource FieldLabel}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="CameraPositionComboBox" Grid.Column="0" Margin="0,0,6,0"
+                                  SelectedIndex="0">
+                            <ComboBoxItem Content="Снизу справа"/>
+                            <ComboBoxItem Content="Снизу слева"/>
+                            <ComboBoxItem Content="Сверху справа"/>
+                            <ComboBoxItem Content="Сверху слева"/>
+                        </ComboBox>
+                        <ComboBox x:Name="CameraSizeComboBox" Grid.Column="1" Margin="6,0,0,0"
+                                  SelectedIndex="1">
+                            <ComboBoxItem Content="Мал. (18%)"/>
+                            <ComboBoxItem Content="Сред. (25%)"/>
+                            <ComboBoxItem Content="Крупн. (35%)"/>
+                        </ComboBox>
+                    </Grid>
+
+                    <TextBlock Text="ИСТОЧНИКИ ЗВУКА" Style="{StaticResource SectionLabel}" Margin="0,8,0,8"/>
+
+                    <TextBlock Text="Микрофон" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox x:Name="MicrophoneComboBox"/>
+
+                    <TextBlock Text="Системный звук (игра/десктоп)" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox x:Name="SystemAudioComboBox"/>
+                    <TextBlock x:Name="SystemAudioHint" FontSize="10" Foreground="{StaticResource MutedBrush}"
+                               TextWrapping="Wrap" Margin="0,-6,0,12"
+                               Text="Если в списке нет подходящего устройства — см. README про Stereo Mix или VB-Audio Virtual Cable."/>
+
+                    <TextBlock Text="ТРАНСЛЯЦИЯ" Style="{StaticResource SectionLabel}" Margin="0,8,0,8"/>
+
+                    <TextBlock Text="Server URL (RTMP)" Style="{StaticResource FieldLabel}"/>
+                    <TextBox x:Name="RtmpUrlTextBox"/>
+
+                    <TextBlock Text="Stream Key" Style="{StaticResource FieldLabel}"/>
+                    <PasswordBox x:Name="StreamKeyPasswordBox"/>
+
+                    <TextBlock Text="Битрейт видео (кбит/с)" Style="{StaticResource FieldLabel}"/>
+                    <ComboBox x:Name="BitrateComboBox" SelectedIndex="1">
+                        <ComboBoxItem Content="3000 (стабильный интернет не требуется)"/>
+                        <ComboBoxItem Content="6000 (рекомендуется для 1080p)"/>
+                        <ComboBoxItem Content="9000 (высокое качество, нужен быстрый интернет)"/>
+                    </ComboBox>
+
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <!-- Нижняя панель управления -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="LogText" Grid.Column="0" Foreground="{StaticResource MutedBrush}"
+                       FontSize="11" FontFamily="Consolas" VerticalAlignment="Center"
+                       TextTrimming="CharacterEllipsis"/>
+
+            <StackPanel Grid.Column="1" Orientation="Horizontal">
+                <Button x:Name="StartButton" Content="▶ Начать трансляцию"
+                        Style="{StaticResource PrimaryButton}" Click="StartButton_Click"/>
+                <Button x:Name="StopButton" Content="■ Остановить"
+                        Style="{StaticResource StopButton}" Click="StopButton_Click"
+                        Margin="8,0,0,0" Visibility="Collapsed"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Window>
